@@ -1,3 +1,12 @@
+"""
+    This programs is Designed and Tested to run on a PC that can run Python.
+    Before Running this program make sure:
+          i)the PC is connected to the Internet.
+         ii)that all the neccesary Libraries are installed.
+        iii)to Change the values for channel_id and read_api_key
+    Optional:
+        change the filename and save_interval as per your requirement
+"""
 import requests
 import json
 import tkinter as tk
@@ -9,6 +18,7 @@ from datetime import datetime
 
 class PestDetectionDisplay:
     def __init__(self, channel_id, read_api_key, save_interval=600, filename="pest_data.csv"):
+        #to declare variables and to create a widget 
         self.channel_id = channel_id
         self.read_api_key = read_api_key
         self.filename = filename
@@ -36,6 +46,7 @@ class PestDetectionDisplay:
         self.root.after(self.save_interval * 1000, self.update_data)
 
     def fetch_data(self):
+        # to retrieve data from the ThingSpeak Cloud
         url = f'https://api.thingspeak.com/channels/{self.channel_id}/feeds.json?api_key={self.read_api_key}&results=1'
         try:
             response = requests.get(url)
@@ -56,6 +67,7 @@ class PestDetectionDisplay:
             return None, None, None
 
     def update_data(self):
+        #to update the values in the Widget
         temp, humid, pest_index = self.fetch_data()
         if temp and humid and pest_index:
             self.temp_label.config(text=f"Temperature: {temp} C")
@@ -70,6 +82,7 @@ class PestDetectionDisplay:
             self.result_label.config(text="Detected Pest: None")
 
     def get_pest_name(self, index):
+        #to get pest lable from the index
         result_names = ["ants", "aphids", "armyworm", "bees","beetle","bollworm","catterpillar","earthworms","earwig","grasshopper","mites","mosquito","moth","sawfly","slug","snail","stem_borer","wasp","weevil"]  # Example names
         if 0 <= index < len(result_names):
             return result_names[index]
@@ -77,12 +90,14 @@ class PestDetectionDisplay:
             return "Unknown"
 
     def update_dataframe(self, pest, temp, humid):
+        #to add the results to the DataFrame
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         data = {'Timestamp': timestamp, 'Pest': pest, 'Temperature (C)': temp, 'Humidity (%)': humid}
         self.dataframe = self.dataframe.append(data, ignore_index=True)
         self.save_dataframe()
 
     def save_dataframe(self):
+        #to save the DataFrame as CSV File
         try:
             self.dataframe.to_csv(self.filename, index=False)
             print(f"Data saved to {self.filename}")

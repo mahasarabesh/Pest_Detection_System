@@ -1,3 +1,12 @@
+"""
+    This programs is Designed and tested to run on a Raspberry Pi 5.
+    Before Running this program make sure:
+          i)the Raspberry Pi 5 is connected to the Internet.
+         ii)that all the neccesary Libraries are installed.
+        iii)Change the values for channel_id and write_api_key
+    Optional:
+        specify the interval value based on the requirement
+"""
 import time
 import adafruit_dht
 import board
@@ -11,6 +20,7 @@ from picamera import PiCamera
 
 class PestDetectionSystem:
     def __init__(self, model_path, result_names_path, channel_id, write_api_key, dht_pin=board.D26):
+        #to declare variables and initialize the Model
         self.camera = PiCamera()
         self.channel_id = channel_id
         self.write_api_key = write_api_key
@@ -32,6 +42,7 @@ class PestDetectionSystem:
         print('Initialization complete.')
 
     def capture_image(self, image_path='test.jpg'):
+        #to capture  a image for processing 
         self.camera.start_preview()
         self.camera.annotate_text = "Hello!!"
         time.sleep(5)
@@ -40,6 +51,7 @@ class PestDetectionSystem:
         return image_path
 
     def process_image(self, image_path):
+        #converts the input Image to array and to make a prediction
         image = Image.open(image_path)
         image = image.resize(self.size)
         
@@ -53,11 +65,13 @@ class PestDetectionSystem:
         return self.get_prediction_result(prediction)
 
     def get_prediction_result(self, prediction):
+        #to get the lable from the index
         result_index = np.argmax(prediction[0])
         print(self.result_names[result_index])
         return result_index
 
     def read_sensor_data(self):
+        #to get temperature and humidity values
         temperature_c = self.dht_device.temperature
         temperature_f = temperature_c * (9 / 5) + 32
         humidity = self.dht_device.humidity
@@ -65,6 +79,7 @@ class PestDetectionSystem:
         return temperature_c, humidity
 
     def send_data(self, temp, humid, index):
+        #to transmit data to the ThingSpeak Cloud
         data = {'Temperature': temp, 'Humidity': humid}
         update_url = f'https://api.thingspeak.com/update?api_key={self.write_api_key}&field1={temp}&field2={humid}&field3={index}'
         
